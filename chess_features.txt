@@ -1,0 +1,29 @@
+Material Balance: Total material value for each side.
+Material Imbalance: Difference in total material value.
+Minor Piece Imbalance: Presence of minor piece imbalances (e.g., bishop vs. knight).
+King Safety: Is the king castled (yes/no)?
+King Safety: Number of pawns protecting the king.
+Pawn Structure: Number of isolated pawns.
+Pawn Structure: Number of doubled pawns.
+Pawn Structure: Number of backward pawns.
+Pawn Structure: Presence of passed pawns.
+Pawn Structure: Number of connected pawns.
+Center Control: Number of pawns and pieces controlling central squares (e4, d4, e5, d5).
+Open Files: Number of open files for rooks.
+Semi-Open Files: Number of semi-open files for rooks.
+Piece Mobility: Total number of legal moves available for all pieces.
+Piece Activity: Number of pieces actively attacking opponent squares.
+King Activity (Endgame): King distance to the center (Manhattan distance).
+King Activity (Endgame): King distance to passed pawns (Manhattan distance).
+Piece Coordination: Number of pieces supporting each other.
+Threats: Number of pieces attacking opponent pieces.
+Threats: Number of unprotected pieces (hanging pieces).
+Space Advantage: Total squares controlled in opponent's territory.
+Bishop Pair: Does one side have a bishop pair (yes/no)?
+Knight Outposts: Number of knights on strong outpost squares.
+Rook Activity: Number of rooks on open or semi-open files.
+Rook on Seventh Rank: Number of rooks on the opponent's 7th rank.
+Pawn Majority: Presence of a pawn majority on one side.
+Passed Pawn Advancement: Distance of passed pawns from promotion (in ranks).
+King Zone Weakness: Number of weak squares around the king.
+Queen Activity: Number of legal moves available for the queen.
