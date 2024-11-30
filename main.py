@@ -1,6 +1,9 @@
 import chess.pgn
 import csv
 import os
+import argparse
+from tqdm import tqdm
+
 from extract_features import (
     material_balance,
     material_imbalance,
@@ -33,9 +36,14 @@ def extract_player_name_from_filename(pgn_filename):
 def is_player_white(game, player_name):
     return game.headers["White"] == player_name
 
+parser = argparse.ArgumentParser(description="Convert PGN file to csv file of features for each possible position of every game in the file")
+parser.add_argument("input_file", type=str, help="The path to the input PGN file")
+parser.add_argument("output_file", type=str, help="The path to the output csv file")
+args = parser.parse_args()
 
-pgn_file = "Adam05.pgn"
-output_file = "data.csv"
+
+pgn_file = args.input_file
+output_file = args.output_file
 player_name = extract_player_name_from_filename(pgn_file)
 
 num_of_games = 0
@@ -48,8 +56,6 @@ num_of_games = 0
 # -5. Split into train,test and val set
 # -6. Train the models
 # -7. Evaluate key metrics like accuracy, precision, recall and F1 score.
-# -8. Hyperparameter tuning using GridSearchCV or RandomizedSearchCV (too long to train)
-# 9. Add features: game_phase, material_balance, white_can_castle, black_can_castle, is_white_move
 # 10. Extract another csv files for middlegame and endgame with features like pawn structure, king safety, piece activity, open or close position, number of open files
 ## For definition
 # Accuracy: How often the model is correct (good for balanced data).
@@ -58,6 +64,7 @@ num_of_games = 0
 
 data = []
 num_of_positions = 0
+print(f"Opening files...")
 with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
     csv_writer = csv.writer(csv_file)
 
@@ -112,9 +119,11 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
             "label",
         ]
     )
-
+    pbar = tqdm(desc="Extracting features", unit=" games")
     while True:
         game = chess.pgn.read_game(pgn)
+
+        pbar.update(1)
 
         if game is None:
             break
@@ -219,6 +228,8 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
                 simulated_board.pop()
 
             board.push(move)
-
+pbar.close()
+print("Finished extracting features")
 print(f"Number of positions: {num_of_positions}")
 print(f"Number of games: {num_of_games}")
+print(f"Extracted features from {pgn_file} to {output_file}")
