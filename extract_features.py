@@ -1,10 +1,5 @@
 import chess
 
-
-# Function to calculate material balance
-import chess
-
-
 def material_balance(board):
     piece_values = {
         chess.PAWN: 1,
@@ -57,7 +52,7 @@ def material_balance(board):
 def material_imbalance(board):
     white_material = material_balance(board)["white_material"]
     black_material = material_balance(board)["black_material"]
-    
+
     return white_material - black_material
 
 
@@ -74,29 +69,9 @@ def minor_piece_imbalance(board):
 
 # Function to evaluate the king's safety (castling and pawn protection)
 def king_safety(board):
-    white_king_square = board.king(chess.WHITE)
-    black_king_square = board.king(chess.BLACK)
-
-    def count_pawns_around(king_square):
-        pawn_protection = 0
-        for square in [
-            king_square - 1,
-            king_square + 1,
-            king_square - 8,
-            king_square + 8,
-        ]:  # adjacent squares
-            if 0 <= square < 64 and board.piece_at(square) == chess.PAWN:
-                pawn_protection += 1
-        return pawn_protection
-
-    white_pawn_protection = count_pawns_around(white_king_square)
-    black_pawn_protection = count_pawns_around(black_king_square)
-
-    return {
+   return {
         "white_king_castled": 1 if board.has_castling_rights(chess.WHITE) else 0,
         "black_king_castled": 1 if board.has_castling_rights(chess.BLACK) else 0,
-        "white_pawn_protection": white_pawn_protection,
-        "black_pawn_protection": black_pawn_protection,
     }
 
 
@@ -116,16 +91,6 @@ def pawn_structure(board):
                 for rank in range(8)
             )
             for adj_file in adjacent_files
-        )
-
-    def is_doubled(square, color):
-        file = square % 8
-        rank = square // 8
-        return any(
-            rank2 != rank
-            and board.piece_at(chess.square(file, rank2)) == chess.PAWN
-            and board.color_at(chess.square(file, rank2)) == color
-            for rank2 in range(8)
         )
 
     def is_backward(square, color):
@@ -154,65 +119,41 @@ def pawn_structure(board):
             )
         )
 
-    def is_connected(square, color):
-        file = square % 8
-        rank = square // 8
-        return any(
-            board.piece_at(chess.square(adj_file, adj_rank)) == chess.PAWN
-            and board.color_at(chess.square(adj_file, adj_rank)) == color
-            for adj_file in [file - 1, file + 1]
-            if 0 <= adj_file <= 7
-            for adj_rank in [rank - 1, rank, rank + 1]
-            if 0 <= adj_rank <= 7
-        )
-
     def count_pawn_structures(color):
         isolated_pawns = 0
-        doubled_pawns = 0
         backward_pawns = 0
         passed_pawns = 0
-        connected_pawns = 0
 
         for square in board.pieces(chess.PAWN, color):
             if is_isolated(square, color):
                 isolated_pawns += 1
-            if is_doubled(square, color):
-                doubled_pawns += 1
             if is_backward(square, color):
                 backward_pawns += 1
             if is_passed(square, color):
                 passed_pawns += 1
-            if is_connected(square, color):
-                connected_pawns += 1
 
         return (
             isolated_pawns,
-            doubled_pawns,
             backward_pawns,
             passed_pawns,
-            connected_pawns,
         )
 
     # Calculate pawn structures for white and black
-    white_isolated, white_doubled, white_backward, white_passed, white_connected = (
+    white_isolated, white_backward, white_passed= (
         count_pawn_structures(chess.WHITE)
     )
-    black_isolated, black_doubled, black_backward, black_passed, black_connected = (
+    black_isolated, black_backward, black_passed= (
         count_pawn_structures(chess.BLACK)
     )
 
     # Return all pawn structures as individual values
     return {
         "white_isolated_pawns": white_isolated,
-        "white_doubled_pawns": white_doubled,
         "white_backward_pawns": white_backward,
         "white_passed_pawns": white_passed,
-        "white_connected_pawns": white_connected,
         "black_isolated_pawns": black_isolated,
-        "black_doubled_pawns": black_doubled,
         "black_backward_pawns": black_backward,
         "black_passed_pawns": black_passed,
-        "black_connected_pawns": black_connected,
     }
 
 
@@ -344,36 +285,6 @@ def king_activity_endgame(board):
         "white_king_dist_to_center": white_king_dist,
         "black_king_dist_to_center": black_king_dist,
     }
-
-
-# Function to calculate the number of pieces supporting each other
-def piece_coordination(board):
-    white_coordination = 0
-    black_coordination = 0
-
-    # Iterate over pieces on the board
-    for square, piece in board.piece_map().items():
-        if piece.piece_type == chess.PAWN:  # Exclude pawns
-            continue
-
-        for move in board.legal_moves:
-            if move.from_square == square:
-                if (
-                    move.to_square != square
-                    and board.piece_at(move.to_square) is not None
-                ):
-                    # Check if the target square is occupied by a friendly piece
-                    if board.piece_at(move.to_square).color == piece.color:
-                        if piece.color == chess.WHITE:
-                            white_coordination += 1
-                        else:
-                            black_coordination += 1
-
-    return {
-        "white_coordination": white_coordination,
-        "black_coordination": black_coordination,
-    }
-
 
 # Function to calculate the number of pieces attacking opponent pieces
 def threats(board):
@@ -544,6 +455,20 @@ def passed_pawn_advancement(board, is_white_player):
 
     return advancement
 
+def calculate_total_squares_king_can_safely_move_to(board, is_white_player):
+
+    if is_white_player:
+        king_color = chess.White
+    else:
+        king_color = chess.Black
+
+
+
+def calculate_king_safety_score(board, is_white_player):
+    #how many squares can the king move to
+    
+
+    return 0
 
 """
 Material Balance: Total material value for each side.

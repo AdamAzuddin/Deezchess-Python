@@ -16,7 +16,6 @@ from extract_features import (
     piece_mobility,
     piece_activity,
     king_activity_endgame,
-    piece_coordination,
     threats,
     space_advantage,
     bishop_pair,
@@ -34,7 +33,15 @@ def extract_player_name_from_filename(pgn_filename):
 
 # Function to identify if the current player is white
 def is_player_white(game, player_name):
-    return game.headers["White"] == player_name
+    white_player=game.headers["White"].split(',')
+    white_player_name = ""
+    if(len(white_player)>1):
+        white_player_name = white_player[0]
+    else:
+        white_player_name=game.headers["White"]
+
+    print(f"White player: {white_player_name}")
+    return white_player_name == player_name
 
 parser = argparse.ArgumentParser(description="Convert PGN file to csv file of features for each possible position of every game in the file")
 parser.add_argument("input_file", type=str, help="The path to the input PGN file")
@@ -68,7 +75,6 @@ print(f"Opening files...")
 with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
     csv_writer = csv.writer(csv_file)
 
-    # Write the header with columns for each feature
     csv_writer.writerow(
         [
             "is_white_player",
@@ -80,18 +86,12 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
             "minor_piece_imbalance",
             "white_king_castled",
             "black_king_castled",
-            "white_pawn_protection",
-            "black_pawn_protection",
             "white_isolated_pawns",
-            "white_doubled_pawns",
             "white_backward_pawns",
             "white_passed_pawns",
-            "white_connected_pawns",
             "black_isolated_pawns",
-            "black_doubled_pawns",
             "black_backward_pawns",
             "black_passed_pawns",
-            "black_connected_pawns",
             "center_control",
             "open_files",
             "white_semi_open_files",
@@ -100,10 +100,8 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
             "black_piece_mobility",
             "white_piece_activity",
             "black_piece_activity",
-            "king_activity_endgame_center",
-            "king_activity_endgame_passed_pawns",
-            "white_coordination",
-            "black_coordination",
+            "white_king_dist_to_center",
+            "black_king_dist_to_center",
             "white_attacking_pieces",
             "white_hanging_pieces",
             "black_attacking_pieces",
@@ -150,7 +148,6 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
             piece_mobility_features = piece_mobility(board)
             piece_activity_features = piece_activity(board)
             king_activity_endgame_features = king_activity_endgame(board)
-            piece_coordination_features = piece_coordination(board)
             threats_features = threats(board)
             bishop_pair_features = bishop_pair(board)
             pawn_majority_features = pawn_majority(board)
@@ -173,22 +170,12 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
                     king_safety_features[
                         "black_king_castled"
                     ],  # Black king castled status
-                    king_safety_features[
-                        "white_pawn_protection"
-                    ],  # White pawn protection count
-                    king_safety_features[
-                        "black_pawn_protection"
-                    ],  # Black pawn protection count
                     pawn_structure_features["white_isolated_pawns"],
-                    pawn_structure_features["white_doubled_pawns"],
                     pawn_structure_features["white_backward_pawns"],
                     pawn_structure_features["white_passed_pawns"],
-                    pawn_structure_features["white_connected_pawns"],
                     pawn_structure_features["black_isolated_pawns"],
-                    pawn_structure_features["black_doubled_pawns"],
                     pawn_structure_features["black_backward_pawns"],
                     pawn_structure_features["black_passed_pawns"],
-                    pawn_structure_features["black_connected_pawns"],
                     center_control(board, is_white),  # Center control
                     open_files(board),  # Open files
                     semi_open_files_features["white_semi_open_files"],
@@ -199,8 +186,6 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
                     piece_activity_features["black_piece_activity"],
                     king_activity_endgame_features["white_king_dist_to_center"],
                     king_activity_endgame_features["black_king_dist_to_center"],
-                    piece_coordination_features["white_coordination"],
-                    piece_coordination_features["black_coordination"],
                     threats_features["white_attacking_pieces"],
                     threats_features["white_hanging_pieces"],
                     threats_features["black_attacking_pieces"],
