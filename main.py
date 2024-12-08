@@ -1,4 +1,6 @@
+import chess
 import chess.pgn
+import chess.polyglot
 import csv
 import os
 import argparse
@@ -40,13 +42,13 @@ def is_player_white(game, player_name):
     else:
         white_player_name=game.headers["White"]
 
-    print(f"White player: {white_player_name}")
     return white_player_name == player_name
 
 parser = argparse.ArgumentParser(description="Convert PGN file to csv file of features for each possible position of every game in the file")
 parser.add_argument("input_file", type=str, help="The path to the input PGN file")
 parser.add_argument("output_file", type=str, help="The path to the output csv file")
 args = parser.parse_args()
+max_number_opening_moves = 10
 
 
 pgn_file = args.input_file
@@ -72,6 +74,82 @@ num_of_games = 0
 data = []
 num_of_positions = 0
 print(f"Opening files...")
+
+#Create polyglot opening book
+def create_player_opening_book(pgn_file, output_book, max_moves=10):
+    player_name = os.path.splitext(os.path.basename(pgn_file))[0]
+    book_data = {}
+    entries = []  # List to hold all book entries
+    pbar = tqdm(desc="Creating opening book: ", unit="moves")
+
+    # Parse PGN file
+    with open(pgn_file, 'r') as f:
+        while True:
+            game = chess.pgn.read_game(f)
+            if game is None:
+                break
+            
+            # Identify the target player (as White or Black)
+            is_white = game.headers.get("White") == player_name
+            is_black = game.headers.get("Black") == player_name
+            if not is_white and not is_black:
+                continue
+
+            board = game.board()
+            move_count = 0
+            
+            # Traverse the moves of the game
+            for move in game.mainline_moves():
+                move_count += 1
+                # Restrict to the first `max_moves` in the game
+                if move_count > max_moves:
+                    break
+                
+                # Add the move only if it's played by the target player
+                if (is_white and board.turn) or (is_black and not board.turn):
+                    fen = board.fen()
+                    
+                    # Track move frequencies for the opening book
+                    if fen not in book_data:
+                        book_data[fen] = {}
+                    
+                    uci_move = move.uci()
+                    if uci_move not in book_data[fen]:
+                        book_data[fen][uci_move] = 0
+                    book_data[fen][uci_move] += 1
+                
+                board.push(move)
+                pbar.update(1)
+
+    # Collect all entries from book_data into a list
+    for fen, moves in book_data.items():
+        for move, weight in moves.items():
+            entry = chess.polyglot.Entry(
+                key=chess.polyglot.zobrist_hash(chess.Board(fen)),
+                raw_move=0,  # You can modify this if needed
+                weight=weight,
+                learn=0,  # You can modify this if needed
+                move=chess.Move.from_uci(move)
+            )
+            entries.append(entry)
+
+    # Sort entries by Zobrist hash (key)
+    entries.sort(key=lambda entry: entry.key)
+
+    # Save the opening book in Polyglot format
+    with open(output_book, 'wb') as book:
+        for entry in entries:
+            book.write(entry.key.to_bytes(8, 'big'))  # Write the Zobrist hash (8 bytes)
+            book.write(entry.raw_move.to_bytes(2, 'big'))  # Write the raw move (2 bytes)
+            book.write(entry.weight.to_bytes(2, 'big'))  # Write the weight (2 bytes)
+            book.write(entry.learn.to_bytes(4, 'big'))  # Write the learn field (4 bytes)
+                
+    print(f"Polyglot book created: {output_book}")
+    pbar.close()
+
+create_player_opening_book(pgn_file, f"{player_name}.bin")
+
+# Store fen positions with features after opening
 with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
     csv_writer = csv.writer(csv_file)
 
@@ -135,7 +213,7 @@ with open(pgn_file) as pgn, open(output_file, "w", newline="") as csv_file:
             num_of_moves += 1
 
             # Skip the first 10 moves (opening phase)
-            if num_of_moves <= 10:
+            if num_of_moves <= max_number_opening_moves:
                 board.push(move)
                 continue
 
