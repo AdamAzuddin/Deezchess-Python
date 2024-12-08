@@ -57,19 +57,7 @@ player_name = extract_player_name_from_filename(pgn_file)
 
 num_of_games = 0
 
-## Task!
-# -1. Only extract the first 10 moves
-# -2. Convert the FEN to array of 64 int, 1=white pawn, -1= black pawn, 0=empty square, white knight = 2, etc
-# -3. Label the move played in the game as 1, other legal moves as 0
-# -4. Experiment with models: Random forest, Xgboost, Balanced Random Forest, neural networks, SVM
-# -5. Split into train,test and val set
-# -6. Train the models
-# -7. Evaluate key metrics like accuracy, precision, recall and F1 score.
-# 10. Extract another csv files for middlegame and endgame with features like pawn structure, king safety, piece activity, open or close position, number of open files
-## For definition
-# Accuracy: How often the model is correct (good for balanced data).
-# Precision: How accurate the model is when it predicts positive cases.
-# Recall: How many actual positive cases the model successfully identifies.
+
 
 data = []
 num_of_positions = 0

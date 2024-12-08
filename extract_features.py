@@ -1,5 +1,8 @@
 import chess
 
+#TODO: Add dynamic features function
+
+
 def material_balance(board):
     piece_values = {
         chess.PAWN: 1,
