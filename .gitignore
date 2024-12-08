@@ -1,9 +1,6 @@
 /__pycache__
 /deezchess-python
-<<<<<<< HEAD
 
-=======
->>>>>>> create-class-feature-extractor
 *.csv
 *.pgn
 *.bin
